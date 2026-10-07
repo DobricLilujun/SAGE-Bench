@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="A small scene-graph dataset and five-method evaluation on real InternScenes scenes." />
+<title>Benchmark · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a><a class="nav-link active" href="benchmark.html">Benchmark</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>Benchmark</h1>
+<p>SAGE-Bench ships a <strong>small, reproducible dataset</strong> plus a harness that evaluates <strong>five scene-graph-building methods</strong> against a deterministic reference ("gold") graph, using the <a href="evaluation.html">factorised metrics</a>. It answers the question a benchmark must answer: <em>given the same scene, which way of building a scene graph is closest to the best graph we can produce?</em></p>
+<p>Everything lives in the [<code class="inl">sage_bench/</code>](https://github.com/DobricLilujun/InternScenes2isaacsim/tree/main/sage_bench) package of the main repository.</p>
+<h2>The reference (gold) graph</h2>
+<p>For each scene the reference is the <strong>deterministic oracle</strong> from <code class="inl">scene_graph.build_scene_graph</code> — metric + hierarchy + semantic edges derived from <code class="inl">layout.json</code>. It is the strongest graph we can produce without a trained model, so it is a reproducible, well-defined target (not hand annotation).</p>
+<h2>The dataset</h2>
+<p><code class="inl">dataset.py</code> selects <strong>12 scenes</strong> — 3 from each of the four source datasets — chosen to span the object-count range (small / medium / large, ~5–212 nodes):</p>
+<div class="table-wrap"><table><thead><tr><th>dataset</th><th>scenes</th><th>object range</th></tr></thead><tbody><tr><td>ScanNet</td><td>3</td><td>3–140</td></tr><tr><td>3RScan</td><td>3</td><td>6–212</td></tr><tr><td>ARKitScenes</td><td>3</td><td>5–93</td></tr><tr><td>Matterport3D</td><td>3</td><td>5–157</td></tr></tbody></table></div>
+<pre class="code"><code class="lang-sh"><span class="c-kw">python</span> -m sage_bench.dataset --per-dataset 3   <span class="c-com"># -&gt; sage_bench/dataset/</span></code></pre>
+<h2>The 5 methods</h2>
+<p>Running the <em>actual</em> external SOTA systems (GPU VLMs, trained detectors) is not feasible in a CPU-only environment, so each method is a <strong>faithful, deterministic proxy for its paradigm</strong>, built on the same InternScenes data — then measured against the reference by the shared harness, exactly as a benchmark does.</p>
+<div class="table-wrap"><table><thead><tr><th>method</th><th>what it builds</th><th>paradigm</th></tr></thead><tbody><tr><td><code class="inl">geometric_3d</code></td><td>metric + hierarchy edges (spatial / containment), no category semantics</td><td>classical <strong>3D scene graph</strong> (boxes / point clouds)</td></tr><tr><td><code class="inl">semantic</code></td><td>semantic + hierarchy edges, no metric</td><td><strong>ontology / category-driven</strong> scene graph</td></tr><tr><td><code class="inl">vlm_augmented</code></td><td>deterministic base + a <strong>VLM functional / affordance</strong> layer (interactive parts + affordances)</td><td><strong>VLM / LLM</strong> scene graph (image/text-grounded)</td></tr><tr><td><code class="inl">knn_spatial</code></td><td>only <code class="inl">distance</code> / <code class="inl">near</code> / <code class="inl">touching</code></td><td><strong>k-nearest-neighbour / spatial</strong> scene graph</td></tr><tr><td><code class="inl">random</code></td><td>random edges between nodes</td><td><strong>null / random baseline</strong></td></tr></tbody></table></div>
+<h2>Results</h2>
+<p>Ranked by <strong>relation F1</strong> across the 12-scene dataset:</p>
+<div class="table-wrap"><table><thead><tr><th>rank</th><th>method</th><th>rel. F1</th><th>P</th><th>R</th><th>node F1</th><th>spatial F1</th><th>mRecall@8</th></tr></thead><tbody><tr><td>1</td><td><strong>vlm_augmented</strong></td><td><strong>0.992</strong></td><td>0.985</td><td>1.000</td><td>0.869</td><td>0.750</td><td>1.000</td></tr><tr><td>2</td><td>geometric_3d</td><td>0.956</td><td>1.000</td><td>0.923</td><td>1.000</td><td>0.750</td><td>0.930</td></tr><tr><td>3</td><td>semantic</td><td>0.559</td><td>1.000</td><td>0.464</td><td>1.000</td><td>0.000</td><td>0.502</td></tr><tr><td>4</td><td>knn_spatial</td><td>0.421</td><td>0.750</td><td>0.295</td><td>1.000</td><td>0.544</td><td>0.360</td></tr><tr><td>5</td><td>random</td><td>0.013</td><td>0.018</td><td>0.011</td><td>1.000</td><td>0.015</td><td>0.294</td></tr></tbody></table></div>
+<p>The ranking is <strong>stable across all four datasets</strong> (per-dataset relation F1: <code class="inl">vlm</code> ≈ 0.997, <code class="inl">geometric</code> ≈ 0.99, <code class="inl">knn</code> ≈ 0.57, <code class="inl">semantic</code> ≈ 0.18, <code class="inl">random</code> ≈ 0.03).</p>
+<h3>Reading the table</h3>
+<ul><li>**<code class="inl">vlm_augmented</code> wins** — it keeps the full deterministic base (recall 1.0) and adds a VLM functional/affordance layer. Its node F1 is slightly lower (0.869) because it <em>adds</em> interactive-part nodes the reference lacks.</li><li>**<code class="inl">geometric_3d</code> is the best non-VLM method** — perfect precision, near-full recall on the spatial / containment edges.</li><li>**<code class="inl">semantic</code> is precise but sparse** — only category rules, so low recall.</li><li>**<code class="inl">knn_spatial</code>** captures proximity but misses containment / semantics.</li><li>**<code class="inl">random</code> ≈ 0** confirms the harness separates signal from noise.</li></ul>
+<h2>Caveats</h2>
+<ul><li><strong>Proxies, not the real systems.</strong> These are deterministic stand-ins for each paradigm, not the actual external SOTA models. To score a <em>real</em> method, point <code class="inl">vlm_augmented</code> at a live VLM endpoint (<code class="inl">INTERN_VLM_ENDPOINT=…</code>, see [<code class="inl">vlm_annotate</code>](vlm_annotation.html)) — the harness then scores its real output against the reference.</li><li><strong>VLM calibration (ECE/Brier)</strong> is reported but <em>not</em> a fair VLM-quality score here: the reference is the deterministic oracle and contains no VLM edges, so VLM edges register as "not in the reference." Treat <strong>relations F1 as the primary signal</strong>.</li></ul>
+<h2>Run it yourself</h2>
+<pre class="code"><code class="lang-sh"><span class="c-kw">python</span> -m sage_bench.dataset --per-dataset 3   <span class="c-com"># build the reference dataset</span>
+<span class="c-kw">python</span> -m sage_bench.run                        <span class="c-com"># -&gt; sage_bench/results/leaderboard.{md,json}</span></code></pre>
+<p>Extend it by adding a function to <code class="inl">METHODS</code> in <code class="inl">methods.py</code> (signature <code class="inl">(scene_id, ref_graph, records) -&gt; graph</code>) — <code class="inl">run.py</code> scores it automatically — or by growing the dataset with <code class="inl">--per-dataset 5</code>.</p>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>
