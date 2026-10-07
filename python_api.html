@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="The programmatic surface of SAGE-Bench" />
+<title>Python API · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link active" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>Python API</h1>
+<p>All public modules live under <code class="inl">internscenes</code>. The package uses lazy imports so <code class="inl">import internscenes</code> works even inside Blender's Python (which lacks optional dependencies).</p>
+<h2>Run the pipeline</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> pipeline
+
+<span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># whole pipeline <span class=<span class="c-str">"c-kw"</span>>for</span> one scene</span>
+status = pipeline.run_scene(<span class="c-str">"scannet/scene0313_00"</span>)
+<span class=<span class="c-str">"c-kw"</span>>if</span> status[<span class="c-str">"status"</span>] != <span class="c-str">"complete"</span>:
+    <span class=<span class="c-str">"c-kw"</span>>raise</span> RuntimeError(status)
+
+<span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># reuse verified existing output; skip Blender; use the VLM layer</span>
+pipeline.run_scene(<span class="c-str">"scannet/scene0313_00"</span>, resume=<span class=<span class="c-str">"c-kw"</span>>True</span>, vlm=<span class=<span class="c-str">"c-kw"</span>>True</span>,
+                   skip_render=<span class=<span class="c-str">"c-kw"</span>>True</span>, auto_fill=<span class=<span class="c-str">"c-kw"</span>>False</span>)</code></pre>
+<p><code class="inl">run_scene</code> signature:</p>
+<div class="table-wrap"><table><thead><tr><th>Parameter</th><th>Default</th><th>Meaning</th></tr></thead><tbody><tr><td><code class="inl">resume</code></td><td><code class="inl">False</code></td><td>reuse verified existing output</td></tr><tr><td><code class="inl">skip_render</code> / <code class="inl">skip_render_multi</code> / <code class="inl">skip_topdown</code> / <code class="inl">skip_graph</code> / <code class="inl">skip_questions</code></td><td><code class="inl">False</code></td><td>skip a stage</td></tr><tr><td><code class="inl">vlm</code></td><td><code class="inl">False</code></td><td>apply the VLM annotation layer</td></tr><tr><td><code class="inl">auto_fill</code></td><td><code class="inl">True</code></td><td>download missing models before compose</td></tr><tr><td><code class="inl">questions_n</code> / <code class="inl">questions_seed</code></td><td><code class="inl">5</code> / <code class="inl">None</code></td><td>navigation questions</td></tr><tr><td><code class="inl">plan_questions</code></td><td><code class="inl">False</code></td><td>also plan paths + render path top-downs</td></tr></tbody></table></div>
+<h2>Individual stages</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> pipeline
+
+pipeline.stage_compose(scene_id)
+pipeline.stage_render(scene_id)
+pipeline.stage_render_multi(scene_id, n_views=<span class=<span class="c-str">"c-num"</span>>8</span>)
+pipeline.stage_topdown(scene_id)
+pipeline.stage_info(scene_id)
+pipeline.stage_graph(scene_id, vlm=<span class=<span class="c-str">"c-kw"</span>>False</span>)
+pipeline.assemble_normalized(scene_id)</code></pre>
+<h2>Scene-graph builder</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> scene_graph
+
+graph = scene_graph.build_scene_graph(
+    scene_id=<span class="c-str">"scannet/scene0313_00"</span>,
+    layout_path=<span class="c-str">"data/Layout_info/scannet/scene0313_00/layout.json"</span>,
+    vlm_result=<span class=<span class="c-str">"c-kw"</span>>None</span>,        <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># optional vlm_annotate result</span>
+    cfg=<span class=<span class="c-str">"c-kw"</span>>None</span>,               <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># optional relations.RelationConfig</span>
+    include_relative=<span class=<span class="c-str">"c-kw"</span>>True</span>,  <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># include left/right/front/behind</span>
+)
+scene_graph.write_scene_graph(graph, <span class="c-str">"output/graph/scene_graph.json"</span>)</code></pre>
+<h2>Relations</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> relations <span class=<span class="c-str">"c-kw"</span>>as</span> rel
+
+cfg = rel.RelationConfig(near_dist=<span class=<span class="c-str">"c-num"</span>>1.0</span>, far_dist=<span class=<span class="c-str">"c-num"</span>>4.0</span>)
+boxes = rel.build_boxes(object_records)
+edges = rel.derive_edges(boxes, cfg, frame=frame)   <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># metric + hierarchy + semantic</span></code></pre>
+<h2>Coordinate</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> coordinate <span class=<span class="c-str">"c-kw"</span>>as</span> coord
+
+frame = coord.room_canonical_frame(object_records)
+pred  = coord.relative_horizontal(a, b, frame)   <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># front|behind|left|right</span>
+vrel  = coord.vertical_relation(a, b)            <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># above|below|<span class=<span class="c-str">"c-kw"</span>>None</span></span>
+obj   = coord.object_intrinsic_frame(record)</code></pre>
+<h2>VLM annotation</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> vlm_annotate
+
+cfg = vlm_annotate.VLMConfig.from_env()
+result = vlm_annotate.annotate(scene_id, object_records, cfg, views)
+rep = vlm_annotate.consistency_check(graph)</code></pre>
+<h2>Evaluation</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> evaluate_graph <span class=<span class="c-str">"c-kw"</span>>as</span> ev
+
+metrics  = ev.evaluate(reference, predicted)
+selfrep  = ev.self_report(predicted)
+cal      = ev.calibration([(<span class=<span class="c-str">"c-num"</span>>0.9</span>, <span class=<span class="c-str">"c-kw"</span>>True</span>), (<span class=<span class="c-str">"c-num"</span>>0.7</span>, <span class=<span class="c-str">"c-kw"</span>>False</span>), ...])
+frontier = ev.pareto([(<span class="c-str">"det"</span>, metrics), (<span class="c-str">"vlm"</span>, ev.evaluate(ref, vlm))])</code></pre>
+<h2>Utilities</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> pipeline
+
+pipeline.resolve_scenes(n=<span class=<span class="c-str">"c-num"</span>>10</span>, seed=<span class=<span class="c-str">"c-num"</span>>0</span>, datasets=[<span class="c-str">"scannet"</span>])
+pipeline.scene_inventory()</code></pre>
+<h2>Next</h2>
+<ul><li><a href="cli.html">CLI Reference</a> — the command-line surface.</li><li><a href="quickstart.html">Quickstart</a> — an end-to-end example.</li></ul>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="The typed edge families, predicates and confidence tiers" />
+<title>Relations &amp; Edge Families · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link active" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>Relations &amp; Edge Families</h1>
+<p>Every edge in a SAGE-Bench graph has a <strong>family</strong>, a <strong>predicate</strong>, and a <strong>confidence tier</strong> (its provenance). The families are derived by <code class="inl">internscenes.relations</code> (deterministic + heuristic) and by <code class="inl">internscenes.vlm_annotate</code> (functional / interactive).</p>
+<h2>Families</h2>
+<div class="table-wrap"><table><thead><tr><th>Family</th><th>Predicates</th><th>Derivation</th><th>Tier</th></tr></thead><tbody><tr><td><strong>Metric / spatial</strong></td><td><code class="inl">distance</code>, <code class="inl">near</code>, <code class="inl">far</code>, <code class="inl">above</code>, <code class="inl">below</code>, <code class="inl">inside</code>, <code class="inl">touching</code>, <code class="inl">left</code>, <code class="inl">right</code>, <code class="inl">front</code>, <code class="inl">behind</code></td><td>from <code class="inl">bbox</code> (gravity-aligned AABB)</td><td><strong>deterministic</strong></td></tr><tr><td><strong>Hierarchy</strong></td><td><code class="inl">contains</code>, <code class="inl">part_of</code>, <code class="inl">in_room</code></td><td>object ∈ room footprint / StructureMesh</td><td><strong>deterministic</strong></td></tr><tr><td><strong>Semantic</strong></td><td><code class="inl">support</code>, <code class="inl">attached_to</code>, <code class="inl">on_top_of</code>, <code class="inl">same_material</code></td><td>rules over category + geometry</td><td><strong>heuristic</strong></td></tr><tr><td><strong>Functional / affordance</strong></td><td><code class="inl">opens_via</code>, <code class="inl">used_for</code>, <code class="inl">pressable</code>, <code class="inl">openable</code>, <code class="inl">graspable</code></td><td>VLM on rendered views (fallback: rules)</td><td><strong>vlm</strong></td></tr><tr><td><strong>Interactive element</strong></td><td>interactive-part nodes + functional edges</td><td>VLM on rendered views (fallback: rules)</td><td><strong>vlm</strong></td></tr><tr><td><strong>Temporal</strong></td><td>—</td><td>static scenes → not applicable</td><td>—</td></tr></tbody></table></div>
+<p>The tier is recorded on every edge so a consumer can filter by provenance:</p>
+<pre class="code"><code class="lang-python">graph = scene_graph.build_scene_graph(scene_id, layout_path)
+det = [e <span class=<span class="c-str">"c-kw"</span>>for</span> e <span class=<span class="c-str">"c-kw"</span>>in</span> graph[<span class="c-str">"edges"</span>] <span class=<span class="c-str">"c-kw"</span>>if</span> e[<span class="c-str">"tier"</span>] == <span class="c-str">"deterministic"</span>]
+vlm = [e <span class=<span class="c-str">"c-kw"</span>>for</span> e <span class=<span class="c-str">"c-kw"</span>>in</span> graph[<span class="c-str">"edges"</span>] <span class=<span class="c-str">"c-kw"</span>>if</span> e[<span class="c-str">"tier"</span>] == <span class="c-str">"vlm"</span>]</code></pre>
+<h2>How edges are derived</h2>
+<p>All geometric relations use <strong>axis-aligned bounding boxes</strong> (AABB), which are deterministic and fast. <code class="inl">dx / dy / dz</code> in <code class="inl">layout.json</code> are full extents; half-extents are <code class="inl">(dx/2, dy/2, dz/2)</code>.</p>
+<h3>Metric / spatial</h3>
+<ul><li><strong>distance</strong> — centre-to-centre distance of the <strong>K nearest neighbours</strong> per object (<code class="inl">K = 8</code>), capped at <code class="inl">max_distance_edges = 400</code> to avoid O(n²) blow-up on large scenes.</li><li><strong>near / far</strong> — centre distance below <code class="inl">near_dist</code> / above <code class="inl">far_dist</code>.</li><li><strong>touching</strong> — small gap <code class="inl">≤ touch_eps</code> with overlap in ≥ 2 axes.</li><li><strong>inside</strong> — AABB containment with a margin.</li><li><strong>above / below</strong> — gravity-aligned vertical (world frame).</li><li><strong>left / right / front / behind</strong> — relative horizontal, <strong>defined by the room-canonical frame</strong> (see <a href="reference_frames.html">Reference Frames</a>).</li></ul>
+<h3>Hierarchy</h3>
+<ul><li><strong>in_room</strong> — object centre inside the room footprint / interior polygon.</li><li><strong>contains / part_of</strong> — one box contains another.</li></ul>
+<h3>Semantic (rules)</h3>
+<div class="table-wrap"><table><thead><tr><th>Predicate</th><th>Rule</th></tr></thead><tbody><tr><td><code class="inl">support</code></td><td>a supportable object sits on a support category (table / shelf / …)</td></tr><tr><td><code class="inl">attached_to</code></td><td>an attachable object is near a wall / support</td></tr><tr><td><code class="inl">on_top_of</code></td><td>a small vertical gap with a large horizontal overlap</td></tr><tr><td><code class="inl">same_material</code></td><td>same normalised category family</td></tr></tbody></table></div>
+<p>The category families (<code class="inl">support_categories</code>, <code class="inl">supportable_categories</code>, <code class="inl">attachable_categories</code>, <code class="inl">wall_mounted_categories</code>) are configured in <code class="inl">RelationConfig</code>.</p>
+<h2>Consistency invariants</h2>
+<p>The deterministic edges satisfy cheap, high-value invariants, checked by <code class="inl">internscenes.vlm_annotate.consistency_check</code>:</p>
+<ul><li><code class="inl">above(a, b) ⇔ below(b, a)</code> (inverse)</li><li><code class="inl">inside(a, b) ⇔ ¬disconnected(a, b)</code></li><li>symmetric <code class="inl">touching</code> / <code class="inl">near</code></li><li>no containment cycles</li><li>room–object geometric containment</li></ul>
+<h2>Configure the thresholds</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> relations <span class=<span class="c-str">"c-kw"</span>>as</span> rel
+
+cfg = rel.RelationConfig(
+    near_dist=<span class=<span class="c-str">"c-num"</span>>1.0</span>,
+    far_dist=<span class=<span class="c-str">"c-num"</span>>4.0</span>,
+    touch_eps=<span class=<span class="c-str">"c-num"</span>>0.05</span>,
+    containment_margin=<span class=<span class="c-str">"c-num"</span>>0.2</span>,
+    max_distance_edges=<span class=<span class="c-str">"c-num"</span>>400</span>,
+    max_edges_per_predicate=<span class=<span class="c-str">"c-num"</span>>600</span>,
+)</code></pre>
+<p>See <a href="reference_frames.html">Reference Frames</a> for how <code class="inl">left / right / front / behind</code> are defined and <a href="evaluation.html">Evaluation Metrics</a> for how relations are scored.</p>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

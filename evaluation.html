@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="The factorised evaluation harness for scene-graph assessment" />
+<title>Evaluation Metrics · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link active" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>Evaluation Metrics</h1>
+<p>SAGE-Bench evaluates a predicted graph against a reference with a <strong>factorised</strong> harness (<code class="inl">internscenes.evaluate_graph</code>) — not a single Recall@K. It scores nodes, relations, spatial, hierarchy, affordance and efficiency, and reports a <strong>Pareto</strong> frontier of accuracy vs efficiency.</p>
+<h2>The factorised score</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> evaluate_graph <span class=<span class="c-str">"c-kw"</span>>as</span> ev
+
+ref = json.load(open(<span class="c-str">"ref.json"</span>))
+pred = json.load(open(<span class="c-str">"pred.json"</span>))
+metrics = ev.evaluate(ref, pred)</code></pre>
+<p><code class="inl">evaluate(reference, predicted)</code> returns:</p>
+<div class="table-wrap"><table><thead><tr><th>Group</th><th>Metric</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>nodes</strong></td><td><code class="inl">mAP</code></td><td>mean average precision of predicted nodes vs reference</td></tr><tr><td></td><td><code class="inl">mean_3d_IoU</code></td><td>mean 3D intersection-over-union of matched boxes</td></tr><tr><td></td><td><code class="inl">macro_F1</code></td><td>macro-averaged F1 over categories</td></tr><tr><td></td><td><code class="inl">num_matched</code> / <code class="inl">num_predicted</code> / <code class="inl">num_reference</code></td><td>counts</td></tr><tr><td><strong>relations</strong></td><td><code class="inl">precision</code> / <code class="inl">recall</code> / <code class="inl">F1</code></td><td>over (source, predicate, target) triplets</td></tr><tr><td><strong>spatial</strong></td><td><code class="inl">precision</code> / <code class="inl">recall</code> / <code class="inl">F1</code></td><td>the metric-family subset</td></tr><tr><td><strong>hierarchy</strong></td><td><code class="inl">precision</code> / <code class="inl">recall</code> / <code class="inl">F1</code></td><td>the hierarchy-family subset</td></tr><tr><td><strong>affordance</strong></td><td><code class="inl">mean_AP</code> / <code class="inl">mean_IoU</code></td><td>affordance / interactive-element scoring</td></tr><tr><td><strong>efficiency</strong></td><td><code class="inl">bytes</code> / <code class="inl">num_nodes</code> / <code class="inl">num_edges</code></td><td>graph cost</td></tr><tr><td><strong>mRecall@K</strong></td><td>float</td><td>long-tail-aware recall (default K = 8)</td></tr></tbody></table></div>
+<h3>Example</h3>
+<pre class="code"><code class="lang-python">metrics = ev.evaluate(ref, pred)
+print(metrics[<span class="c-str">"relations"</span>][<span class="c-str">"F1"</span>])     <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># <span class=<span class="c-str">"c-num"</span>>0.994</span></span>
+print(metrics[<span class="c-str">"spatial"</span>][<span class="c-str">"F1"</span>])       <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># <span class=<span class="c-str">"c-num"</span>>1.0</span></span>
+print(metrics[<span class="c-str">"nodes"</span>][<span class="c-str">"macro_F1"</span>])  <span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># <span class=<span class="c-str">"c-num"</span>>0.867</span></span></code></pre>
+<h2>Calibration (VLM)</h2>
+<p>For VLM-derived edges, calibration measures how well the confidence predicts correctness. Provide <code class="inl">(confidence, is_correct)</code> pairs:</p>
+<pre class="code"><code class="lang-python">pairs = [(<span class=<span class="c-str">"c-num"</span>>0.9</span>, <span class=<span class="c-str">"c-kw"</span>>True</span>), (<span class=<span class="c-str">"c-num"</span>>0.8</span>, <span class=<span class="c-str">"c-kw"</span>>False</span>), (<span class=<span class="c-str">"c-num"</span>>0.6</span>, <span class=<span class="c-str">"c-kw"</span>>True</span>), ...]
+cal = ev.calibration(pairs)
+<span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># {<span class="c-str">"ECE"</span>: <span class=<span class="c-str">"c-num"</span>>0.31</span>, <span class="c-str">"Brier"</span>: <span class=<span class="c-str">"c-num"</span>>0.15</span>, <span class="c-str">"n"</span>: <span class=<span class="c-str">"c-num"</span>>3</span>}</span></code></pre>
+<ul><li><strong>ECE</strong> — expected calibration error (10 equal-width bins)</li><li><strong>Brier</strong> — mean squared (confidence − outcome) error</li></ul>
+<h2>Pareto (accuracy vs efficiency)</h2>
+<p>Compare several methods on the accuracy / efficiency frontier:</p>
+<pre class="code"><code class="lang-python">entries = [
+    (<span class="c-str">"deterministic"</span>, ev.evaluate(ref, det)),
+    (<span class="c-str">"vlm"</span>,          ev.evaluate(ref, vlm)),
+]
+frontier = ev.pareto(entries)
+<span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># {<span class="c-str">"frontier"</span>: [...], <span class="c-str">"points"</span>: {...}, <span class="c-str">"num_entries"</span>: <span class=<span class="c-str">"c-num"</span>>2</span>}</span></code></pre>
+<p>Each point is (accuracy, cost) where accuracy is the mean of the reported F1 scores and cost is <code class="inl">bytes + 8 · num_edges</code>. The frontier keeps non-dominated points (accuracy up, cost down).</p>
+<h2>Self-consistency</h2>
+<p><code class="inl">self_report(graph)</code> checks a single graph against its own invariants (no reference needed):</p>
+<pre class="code"><code class="lang-python">rep = ev.self_report(pred)
+<span <span class=<span class="c-str">"c-kw"</span>>class</span>=<span class="c-str">"c-com"</span>># {<span class="c-str">"consistent"</span>: <span class=<span class="c-str">"c-kw"</span>>True</span>, <span class="c-str">"issues"</span>: <span class=<span class="c-str">"c-num"</span>>0</span>, <span class="c-str">"by_family"</span>: {...}, <span class="c-str">"by_level"</span>: {...}, ...}</span></code></pre>
+<h2>CLI</h2>
+<pre class="code"><code class="lang-sh"><span class="c-com"># self-consistency</span>
+<span class="c-kw">internscenes</span> graph &lt;scene&gt; --self
+
+<span class="c-com"># evaluate a prediction against a reference</span>
+<span class="c-kw">internscenes</span> graph &lt;scene&gt; --reference output/graph/ref.json</code></pre>
+<h2>Next</h2>
+<ul><li><a href="vlm_annotation.html">VLM Annotation</a> — where the calibrated edges come from.</li><li><a href="scene_graph_schema.html">Scene-Graph Schema</a> — what the metrics score over.</li></ul>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

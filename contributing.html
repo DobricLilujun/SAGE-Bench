@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="How to contribute to SAGE-Bench" />
+<title>Contributing · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link active" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>Contributing</h1>
+<p>SAGE-Bench is open source (MIT). Contributions — new edge families, better reference frames, evaluation metrics, VLM backends, fixes and docs — are welcome.</p>
+<h2>Prerequisites</h2>
+<ul><li>Python <strong>3.11+</strong></li><li>InternScenes layout data (see <a href="installation.html">Installation</a>)</li><li>Blender <strong>4.5+</strong> for rendering stages (optional for the graph / evaluation stages)</li></ul>
+<h2>Local setup</h2>
+<pre class="code"><code class="lang-sh"><span class="c-kw">uv</span> venv --<span class="c-kw">python</span> 3.11 .venv311
+source .venv311/bin/activate
+<span class="c-kw">uv</span> pip install -e ".[dev]"</code></pre>
+<h2>Run the tests</h2>
+<pre class="code"><code class="lang-sh"><span class="c-kw">python</span> -m unittest discover -s tests -v</code></pre>
+<p>All tests must pass before you open a pull request. The scene-graph core (<code class="inl">coordinate</code>, <code class="inl">relations</code>, <code class="inl">scene_graph</code>) is testable <strong>without</strong> Blender or asset composition — it uses <code class="inl">layout.json</code> and structure-mesh data only.</p>
+<h2>How to add an edge family</h2>
+<ol><li>Add a predicate + confidence tier to the family table in <code class="inl">src/internscenes/relations.py</code> (or <code class="inl">vlm_annotate.py</code>).</li><li>Derive it in <code class="inl">derive_edges</code> with an explicit <code class="inl">reference_frame</code> (<a href="reference_frames.html">Reference Frames</a>).</li><li>Add a consistency invariant in <code class="inl">consistency_check</code> (inverse / symmetry / containment).</li><li>Add it to the factorised score in <code class="inl">src/internscenes/evaluate_graph.py</code>.</li><li>Add a unit test under <code class="inl">tests/</code>.</li></ol>
+<h2>How to add an evaluation metric</h2>
+<p>Extend <code class="inl">evaluate_graph.evaluate</code> (or add a standalone helper) and document it in <a href="evaluation.html">Evaluation Metrics</a>. Keep the harness <strong>factorised</strong> — one metric per group, never a single Recall@K.</p>
+<h2>Build the docs</h2>
+<p>The site is built by <code class="inl">docs-site/build.py</code> (a dependency-free, stdlib builder):</p>
+<pre class="code"><code class="lang-sh">cd docs-site
+python3 build.py        <span class="c-com"># -&gt; docs-site/output/</span></code></pre>
+<p>The output is served by GitHub Pages at <code class="inl">https://dobriclilujun.github.io/SAGE-Bench</code> (see <a href="https://github.com/DobricLilujun/SAGE-Bench/blob/main/.github/workflows/pages.yml">.github/workflows/pages.yml</a>).</p>
+<h2>Pull requests</h2>
+<ul><li>Keep commits focused and describe the <em>why</em> in the description.</li><li>Add or update tests for behaviour changes.</li><li>Keep the schema degradable — a missing layer should never fail the build.</li><li>Update the relevant page under <code class="inl">docs-site/source/</code>.</li></ul>
+<h2>Code of conduct</h2>
+<p>Be kind. Assume good intent. Cite the data and the model behind any claim.</p>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

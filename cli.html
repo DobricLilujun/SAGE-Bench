@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Every SAGE-Bench command and flag" />
+<title>CLI Reference · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link active" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>CLI Reference</h1>
+<p>The <code class="inl">internscenes</code> console command exposes the pipeline and the scene-graph tools.</p>
+<h2>Commands</h2>
+<div class="table-wrap"><table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody><tr><td><code class="inl">run</code></td><td>run the full pipeline</td></tr><tr><td><code class="inl">render</code></td><td>render a perspective PNG (Blender)</td></tr><tr><td><code class="inl">topdown</code></td><td>render a 2D top-down projection</td></tr><tr><td><code class="inl">info</code></td><td>export scene metadata JSON</td></tr><tr><td><code class="inl">graph</code></td><td>build a scene-graph JSON (deterministic + optional VLM)</td></tr><tr><td><code class="inl">batch</code></td><td>run the legacy batch pipeline</td></tr><tr><td><code class="inl">questions</code></td><td>generate object-finding navigation questions</td></tr><tr><td><code class="inl">plan-questions</code></td><td>plan A* paths and render path top-downs</td></tr></tbody></table></div>
+<h2><code class="inl">run</code> — full pipeline</h2>
+<pre class="code"><code class="lang-sh"><span class="c-com"># reproducible sampling (2 scenes / dataset)</span>
+<span class="c-kw">internscenes</span> run -n 2 --seed 200
+
+<span class="c-com"># one scene</span>
+<span class="c-kw">internscenes</span> run --scene scannet/scene0313_00
+
+<span class="c-com"># reuse verified output + VLM layer</span>
+<span class="c-kw">internscenes</span> run --scene scannet/scene0313_00 --resume --vlm
+
+<span class="c-com"># no Blender rendering</span>
+<span class="c-kw">internscenes</span> run --scene scannet/scene0313_00 --skip-render
+
+<span class="c-com"># no graph / multi-view stage</span>
+<span class="c-kw">internscenes</span> run --scene scannet/scene0313_00 --skip-graph --skip-render-multi</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Flag</th><th>Meaning</th></tr></thead><tbody><tr><td><code class="inl">--scene</code></td><td>specific scene id(s); repeatable</td></tr><tr><td><code class="inl">-n</code></td><td>scenes per dataset</td></tr><tr><td><code class="inl">--seed</code></td><td>RNG seed for sampling</td></tr><tr><td><code class="inl">--resume</code></td><td>reuse verified existing output</td></tr><tr><td><code class="inl">--vlm</code></td><td>apply the VLM annotation layer</td></tr><tr><td><code class="inl">--disable-auto-fill</code></td><td>use local assets only</td></tr><tr><td><code class="inl">--skip-render</code> / <code class="inl">--skip-render-multi</code> / <code class="inl">--skip-graph</code> / <code class="inl">--skip-topdown</code> / <code class="inl">--skip-questions</code></td><td>skip a stage</td></tr><tr><td><code class="inl">--plan-questions</code></td><td>also plan paths + render path top-downs</td></tr><tr><td><code class="inl">--min-room-extent</code></td><td>skip scenes below a floor dimension (m)</td></tr></tbody></table></div>
+<h2><code class="inl">graph</code> — scene graph</h2>
+<pre class="code"><code class="lang-sh"><span class="c-com"># deterministic</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0313_00 --out output/graph
+
+<span class="c-com"># VLM layer (deterministic fallback if no endpoint)</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0313_00 --vlm --out output/graph
+
+<span class="c-com"># self-consistency report</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0313_00 --self
+
+<span class="c-com"># evaluate against a reference</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0313_00 --reference output/graph/ref.json</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Argument / flag</th><th>Meaning</th></tr></thead><tbody><tr><td><code class="inl">scene</code> (positional)</td><td>scene id, e.g. <code class="inl">scannet/scene0313_00</code></td></tr><tr><td><code class="inl">--out</code></td><td>output path (a file or a directory)</td></tr><tr><td><code class="inl">--vlm</code></td><td>apply the VLM annotation layer</td></tr><tr><td><code class="inl">--reference</code></td><td>reference <code class="inl">scene_graph.json</code> for factorised evaluation</td></tr><tr><td><code class="inl">--self</code></td><td>report only self-consistency (no reference)</td></tr></tbody></table></div>
+<blockquote>`--out` may be a **file** or a **directory**; a bare directory gets the `<flat>_vlm.json` name appended as appropriate.</blockquote>
+<h2><code class="inl">render</code> / <code class="inl">topdown</code></h2>
+<pre class="code"><code class="lang-sh"><span class="c-kw">internscenes</span> render --glb output/composed/.../glb_scene.glb --out output/render --engine EEVEE
+<span class="c-kw">internscenes</span> topdown --scene scannet/scene0313_00</code></pre>
+<h2>Environment variables</h2>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>Meaning</th></tr></thead><tbody><tr><td><code class="inl">INTERN_DATA_DIR</code></td><td>path to <code class="inl">data/</code> (default <code class="inl">data</code>)</td></tr><tr><td><code class="inl">BLENDER</code></td><td>path to the Blender binary (else detected on <code class="inl">PATH</code>)</td></tr><tr><td><code class="inl">INTERN_VLM_ENDPOINT</code></td><td>VLM base URL (OpenAI-compatible)</td></tr><tr><td><code class="inl">INTERN_VLM_MODEL_ID</code></td><td>VLM model id (default <code class="inl">Qwen3.8-27B-NVFP4</code>)</td></tr><tr><td><code class="inl">INTERN_VLM_TEMPERATURE</code></td><td>sampling temperature</td></tr></tbody></table></div>
+<h2>Next</h2>
+<ul><li><a href="quickstart.html">Quickstart</a> — the common workflow.</li><li><a href="installation.html">Installation</a> — setup.</li></ul>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Multi-view orbit and top-down capture for the VLM annotation track" />
+<title>Multi-View Rendering · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link active" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <h1>Multi-View Rendering</h1>
+<p><code class="inl">internscenes.render_multi</code> captures a ring of <strong>orbit</strong> cameras around the room centre at eye level plus one <strong>top-down</strong> view, in a single Blender session (the glTF is imported once and reused for every camera). The captures feed the <a href="vlm_annotation.html">VLM annotation</a> track.</p>
+<h2>What it produces</h2>
+<p>For a scene, <code class="inl">render_multi</code> writes:</p>
+<pre class="code"><code class="lang-text">&lt;scene_id&gt;__view_0.png
+&lt;scene_id&gt;__view_1.png
+...
+&lt;scene_id&gt;__view_{n-1}.png
+&lt;scene_id&gt;__topdown.png</code></pre>
+<p>The default is <strong>8 orbit views + 1 top-down</strong> (count configurable). The <code class="inl">scene_id</code> is flattened for filenames (<code class="inl">scannet/scene0013_00</code> → <code class="inl">scannet_scene0013_00</code>), so files land directly in the render directory with no nesting.</p>
+<h2>How it works</h2>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>def</span> render_multi(glb_path, out_dir=<span class=<span class="c-str">"c-kw"</span>>None</span>, engine=<span class="c-str">"auto"</span>,
+                 n_views=<span class=<span class="c-str">"c-num"</span>>8</span>, height=<span class=<span class="c-str">"c-num"</span>>1.6</span>, resolution=(<span class=<span class="c-str">"c-num"</span>>1920</span>, <span class=<span class="c-str">"c-num"</span>>1080</span>),
+                 scene_id=<span class=<span class="c-str">"c-kw"</span>>None</span>) -&gt; list[str]:
+    ...</code></pre>
+<ul><li><strong>import once</strong> — the composed GLB is imported a single time.</li><li><strong>hide structure</strong> — floor / wall / ceiling hidden so the interior is visible (same as <code class="inl">render.py</code>).</li><li><strong>lighting</strong> — a sun + world background (same as <code class="inl">render.py</code>).</li><li><strong>orbit</strong> — cameras placed evenly around the room centre at eye height.</li><li><strong>top-down</strong> — one camera above the room looking down.</li><li><strong>engine</strong> — <code class="inl">auto</code> (Eevee → Cycles) or <code class="inl">CYCLES</code>.</li></ul>
+<h2>Bootstrapped inside Blender</h2>
+<p>Like <code class="inl">render.py</code>, the module <strong>must run inside Blender's Python</strong> (it imports <code class="inl">bpy</code>). It is bootstrapped by <code class="inl">internscenes._render_in_blender</code>, which re-executes the module inside Blender's interpreter via the project venv.</p>
+<p>The pipeline invokes it by setting <code class="inl">INTERN_RENDER_FILE=render_multi.py</code> and running the Blender bootstrap — the same mechanism as the single perspective render:</p>
+<pre class="code"><code class="lang-text">blender --background --python _render_in_blender.py -- \
+    --glb &lt;glb&gt; --out &lt;render_dir&gt; --engine=EEVEE \
+    --views=8 --height=1.6 --scene &lt;scene_id&gt;</code></pre>
+<p>The bootstrap reads <code class="inl">INTERN_RENDER_FILE</code> (default <code class="inl">render.py</code>) so one script serves both the single and multi-view renders.</p>
+<h2>Run via the pipeline</h2>
+<pre class="code"><code class="lang-sh"><span class="c-com"># full pipeline includes render_multi</span>
+<span class="c-kw">internscenes</span> run --scene scannet/scene0313_00 --resume
+
+<span class="c-com"># skip the multi-view stage</span>
+<span class="c-kw">internscenes</span> run --scene scannet/scene0313_00 --skip-render-multi</code></pre>
+<p>Or call the stage directly:</p>
+<pre class="code"><code class="lang-python"><span class=<span class="c-str">"c-kw"</span>>from</span> internscenes <span class=<span class="c-str">"c-kw"</span>>import</span> pipeline
+ok = pipeline.stage_render_multi(<span class="c-str">"scannet/scene0313_00"</span>, n_views=<span class=<span class="c-str">"c-num"</span>>4</span>)</code></pre>
+<h2>Requirements</h2>
+<ul><li>A <strong>composed GLB</strong> for the scene (run <code class="inl">internscenes run … --resume</code> or compose first).</li><li><strong>Blender</strong> on <code class="inl">PATH</code> (or set <code class="inl">BLENDER=/path/to/blender</code>).</li></ul>
+<p>If the composed GLB is missing, the stage degrades to a warning and the graph stage falls back to deterministic affordances — the pipeline does not block.</p>
+<h2>Next</h2>
+<ul><li><a href="vlm_annotation.html">VLM Annotation</a> — consumes these captures.</li><li><a href="cli.html">CLI Reference</a> — every flag for the pipeline.</li></ul>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>

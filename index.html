@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Scene-graph Assessment and Generation Evaluation for Indoor Environments" />
+<title>SAGE-Bench · SAGE-Bench</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/lunr@2.3.9/lunr.min.js" defer></script>
+<script src="assets/search.js" defer></script>
+</head>
+<body>
+<div class="scanline"></div>
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <img src="assets/logo.svg" alt="SAGE-Bench logo" class="brand-logo" />
+    <span class="brand-name">SAGE-Bench</span>
+    <span class="brand-tag">Scene-graph Assessment &amp; Generation Evaluation</span>
+  </a>
+  <div class="search">
+    <span class="search-ico">⌕</span>
+    <input id="search-input" type="search" placeholder="Search the docs…  ( / )"
+           autocomplete="off" aria-label="Search" />
+    <div id="search-results" class="search-results" hidden></div>
+  </div>
+  <div class="topbar-right">
+    <a href="https://github.com/DobricLilujun/SAGE-Bench" class="gh-link" title="GitHub">GH</a>
+    <span class="ver">v1.0</span>
+  </div>
+  <button class="menu-toggle" aria-label="Menu">☰</button>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <nav class="nav"><div class="nav-group"><div class="nav-title">SAGE-Bench</div><div class="nav-links"><a class="nav-link active" href="index.html">Overview</a></div></div><div class="nav-group"><div class="nav-title">Getting Started</div><div class="nav-links"><a class="nav-link" href="installation.html">Installation</a><a class="nav-link" href="quickstart.html">Quickstart</a></div></div><div class="nav-group"><div class="nav-title">Core</div><div class="nav-links"><a class="nav-link" href="scene_graph_schema.html">Scene-Graph Schema</a><a class="nav-link" href="relations.html">Relations &amp; Edge Families</a><a class="nav-link" href="reference_frames.html">Reference Frames</a></div></div><div class="nav-group"><div class="nav-title">Annotation</div><div class="nav-links"><a class="nav-link" href="vlm_annotation.html">VLM Annotation</a></div></div><div class="nav-group"><div class="nav-title">Evaluation</div><div class="nav-links"><a class="nav-link" href="evaluation.html">Evaluation Metrics</a></div></div><div class="nav-group"><div class="nav-title">Pipeline</div><div class="nav-links"><a class="nav-link" href="rendering.html">Multi-View Rendering</a></div></div><div class="nav-group"><div class="nav-title">Reference</div><div class="nav-links"><a class="nav-link" href="python_api.html">Python API</a><a class="nav-link" href="cli.html">CLI Reference</a></div></div><div class="nav-group"><div class="nav-title">Community</div><div class="nav-links"><a class="nav-link" href="contributing.html">Contributing</a></div></div></nav>
+    <div class="nav-foot">
+      <div class="chip">MIT</div>
+      <div class="chip">Open Source</div>
+    </div>
+  </aside>
+  <main class="content">
+    <article class="doc">
+      <div class="hero">
+  <img src="assets/logo.svg" alt="SAGE-Bench" class="logo-big" />
+  <h1>SAGE-Bench</h1>
+  <div class="sub">Scene-graph <strong>Assessment</strong> &amp; <strong>Generation</strong> Evaluation</div>
+  <div class="badges">
+    <span class="badge"><span class="dot"></span> open source</span>
+    <span class="badge"><span class="dot"></span> MIT license</span>
+    <span class="badge"><span class="dot"></span> Python 3.11+</span>
+    <span class="badge"><span class="dot"></span> InternScenes</span>
+  </div>
+</div>
+<p><strong>SAGE-Bench</strong> turns the raw indoor layouts of <a href="https://github.com/InternRobotics/InternScenes">InternScenes</a> into a first-class <strong>scene-graph benchmark</strong>: typed nodes, a degradable canonical schema, a full family of spatial / hierarchical / semantic / functional relations, a documented <strong>reference-frame standard</strong>, a <strong>VLM annotation</strong> track, and a <strong>factorised evaluation harness</strong> — all built on the 2,847 scenes, 87,733 objects and 258 categories already present in InternScenes.</p>
+<p>It powers two research questions at once:</p>
+<ul><li><strong>Assessment</strong> — how well does a method <em>read</em> a scene? (node / relation / spatial / hierarchy / affordance recall)</li><li><strong>Generation</strong> — how well does a method <em>build</em> a scene graph from geometry + images, with a reproducible confidence provenance?</li></ul>
+<h2>Why SAGE-Bench</h2>
+<div class="table-wrap"><table><thead><tr><th>Ingredient</th><th>What you get</th></tr></thead><tbody><tr><td>Object <strong>nodes</strong></td><td>grounded geometry + category + colour per object</td></tr><tr><td>Room <strong>structure</strong></td><td>real floor / wall / ceiling meshes → containment &amp; footprint</td></tr><tr><td><strong>Edges</strong></td><td>metric / hierarchy / semantic / functional families, each with a confidence tier</td></tr><tr><td><strong>Reference frame</strong></td><td>gravity-aligned world, room-canonical (PCA), object-intrinsic</td></tr><tr><td><strong>Multi-view</strong></td><td>orbit + top-down captures for a VLM annotation track</td></tr><tr><td><strong>Evaluation</strong></td><td>node mAP / 3D-IoU / Macro-F1, relation Triplet P/R/F1, mRecall@K, ECE/Brier, Pareto</td></tr></tbody></table></div>
+<h2>The stack</h2>
+<div class="features">
+  <div class="feat">
+    <div class="f-ico">◈</div>
+    <h4>scene_graph</h4>
+    <p>Assemble a degradable graph from <code>layout.json</code> and write <code>scene_graph.json</code>.</p>
+  </div>
+  <div class="feat">
+    <div class="f-ico">⌗</div>
+    <h4>relations</h4>
+    <p>Deterministic + heuristic edge families with explicit confidence tiers.</p>
+  </div>
+  <div class="feat">
+    <div class="f-ico">⌁</div>
+    <h4>coordinate</h4>
+    <p>Room-canonical &amp; object-intrinsic frames so "front / behind" is well-defined.</p>
+  </div>
+  <div class="feat">
+    <div class="f-ico">⚿</div>
+    <h4>vlm_annotate</h4>
+    <p>Configurable VLM backend + deterministic fallback + a reproducibility manifest.</p>
+  </div>
+  <div class="feat">
+    <div class="f-ico">∑</div>
+    <h4>evaluate_graph</h4>
+    <p>Factorised metrics, calibration and an accuracy/efficiency Pareto frontier.</p>
+  </div>
+  <div class="feat">
+    <div class="f-ico">⌖</div>
+    <h4>render_multi</h4>
+    <p>Multi-view orbit + top-down capture inside Blender for the annotation track.</p>
+  </div>
+</div>
+<h2>60-second quickstart</h2>
+<pre class="code"><code class="lang-sh"><span class="c-com"># 1. install the library</span>
+<span class="c-kw">uv</span> pip install -e .          <span class="c-com"># or: pip install -e .</span>
+
+<span class="c-com"># 2. build a scene graph for one scene (deterministic)</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0313_00 --out output/graph
+
+<span class="c-com"># 3. build with the VLM layer (deterministic fallback if no endpoint)</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0313_00 --vlm --out output/graph
+
+<span class="c-com"># 4. evaluate a prediction against a reference</span>
+<span class="c-kw">internscenes</span> graph scannet/scene0330_00 --reference output/graph/ref.json</code></pre>
+<p>See the <a href="quickstart.html">Quickstart</a> for the full walkthrough and the <a href="python_api.html">Python API</a> for programmatic use.</p>
+<h2>What's inside</h2>
+<ul><li><strong><a href="scene_graph_schema.html">Scene-Graph Schema</a></strong> — the degradable canonical schema.</li><li><strong><a href="relations.html">Relations &amp; Edge Families</a></strong> — every predicate + confidence tier.</li><li><strong><a href="reference_frames.html">Reference Frames</a></strong> — the coordinate standard.</li><li><strong><a href="vlm_annotation.html">VLM Annotation</a></strong> — the annotation track + manifest.</li><li><strong><a href="evaluation.html">Evaluation Metrics</a></strong> — the factorised harness.</li><li><strong><a href="rendering.html">Multi-View Rendering</a></strong> — the capture stage.</li></ul>
+<h2>Cite</h2>
+<pre class="code"><code class="lang-bibtex">@software{sagebench2026,
+  title  = {SAGE-Bench: Scene-graph Assessment and Generation Evaluation},
+  author = {DobricLilujun},
+  year   = {2026},
+  url    = {https://github.com/DobricLilujun/SAGE-Bench},
+  version = {1.0}
+}</code></pre>
+    </article>
+    <footer class="foot">
+      <div>Built with <span class="mono">build.py</span> · SAGE-Bench
+        v1.0</div>
+      <div class="foot-links">
+        <a href="https://github.com/DobricLilujun/SAGE-Bench">GitHub</a>
+        <a href="contributing.html">Contribute</a>
+      </div>
+    </footer>
+  </main>
+</div>
+</body>
+</html>
